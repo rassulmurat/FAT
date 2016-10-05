@@ -9,14 +9,15 @@ typedef int FAT[1000];
 struct DIR_ENT {
     int start;
     int size;
-    int ifdir;
+    int isdir;
     char name[255];
 };
 typedef struct DIR_ENT DIR[1000];
 typedef char DATA[1000];
+
 /*
  * Read FAT
- * returns pointer to FAT
+ * returns fater to FAT
  * */
 int read_fat(FAT *fat)
 {
@@ -25,13 +26,8 @@ int read_fat(FAT *fat)
         perror("Could not open FAT");
         return 1;
     }
-    //find the file size
-    long sf;
-    fseek(file, 0L, SEEK_END);
-    sf = ftell(file);
-    rewind(file);
     //Read whole file
-    if (fread(fat, (size_t)sf, 1, file) != 1) {
+    if (fread(fat, sizeof(FAT), 1, file) != 1) {
         perror("Could not read FAT");
         return  1;
     }
@@ -42,14 +38,14 @@ int read_fat(FAT *fat)
 /*
  * Returns 1 if error
  * */
-int write_fat(FAT *point)
+int write_fat(FAT *fat)
 {
     FILE *file = fopen(PATH_FAT, "w");
     if (!file) {
         perror("Could not open FAT");
         return 1;
     }
-    if (fwrite(point, sizeof(point), 1, file) != 1) {
+    if (fwrite(fat, sizeof(FAT), 1, file) != 1) {
         perror("Could not write FAT");
         return 1;
     }
@@ -65,7 +61,7 @@ int write_dir(DIR *dir)
         perror("Could not open DIR");
         return 1;
     }
-    if (fwrite(dir, sizeof(dir), 1, file) != 1) {
+    if (fwrite(dir, sizeof(DIR), 1, file) != 1) {
         perror("Could not write DIR");
         return 1;
     }
@@ -80,13 +76,8 @@ int read_dir(DIR *dir)
         perror("Could not open DIR");
         return 1;
     }
-    //find the file size
-    long sf;
-    fseek(file, 0L, SEEK_END);
-    sf = ftell(file);
-    rewind(file);
     //Read whole file
-    if (fread(dir, (size_t)sf, 1, file) != 1) {
+    if (fread(dir, sizeof(DIR), 1, file) != 1) {
         perror("Could not read DIR");
         return  1;
     }
@@ -108,13 +99,6 @@ int write_data(DATA *data)
     fclose(file);
     return 0;
 }
-/*
-* Write single byte from data
-*/
-int wbyte_data()
-{
-
-}
 
 int read_data(DATA *data)
 {
@@ -123,13 +107,8 @@ int read_data(DATA *data)
         perror("Could not open DATA");
         return 1;
     }
-    //find the file size
-    long sfile;
-    fseek(file, 0L, SEEK_END);
-    sfile = ftell(file);
-    rewind(file);
     //Read whole file
-    if (fread(data, (size_t)sfile, 1, file) != 1) {
+    if (fread(data, sizeof(DATA), 1, file) != 1) {
         perror("Could not read DATA");
         return  1;
     }
@@ -144,6 +123,7 @@ int read_data(DATA *data)
 */
 int rbyte_data(int pos, char *dest)
 {
+    pos = pos - 1;
     FILE *file = fopen(PATH_DATA, "r+");
     if (!file) {
         perror("Could not open DATA");
@@ -153,6 +133,28 @@ int rbyte_data(int pos, char *dest)
     if (fread(dest, 1, 1, file) != 1) {
         perror("Could not read DATA");
         return  1;
+    }
+    fclose(file);
+    return 0;
+}
+
+/*
+*   Write single byte to data.
+*   int - byte Position
+*   char - Byte.
+*/
+int wbyte_data(int pos, char ch)
+{
+    pos = pos - 1;
+    FILE *file = fopen(PATH_DATA, "r+");
+    if (!file) {
+        perror("Could not open DATA");
+        return 1;
+    }
+    fseek(file, pos, SEEK_SET);
+    if (fwrite(&ch, 1, 1, file) != 1) {
+        perror("Could not write DATA");
+        return 1;
     }
     fclose(file);
     return 0;
@@ -168,7 +170,6 @@ int test_read()
     if (read_dir(&dir)) {
         return 1;
     }
-    DATA data;
     char ch;
     if (rbyte_data(777, &ch)) {
         return 1;
@@ -182,6 +183,7 @@ int test_read()
 int init()
 {
     FAT fat;
+    memset(&fat, 0, sizeof(FAT));
     fat[0] = 1;
     if (write_fat(&fat)) {
         return 1;
@@ -192,15 +194,11 @@ int init()
         return 1;
     }
     DATA data;
+    // _ means empty slot
     memset(data, '_', sizeof(DATA));
-    data[777] = 'R';
-    // for (int i = 0; i < 1000; ++i)
-    // {
-    //     strcpy(&data[i], "h");
-    //     // printf("%d\n", i);
-    // }
     if (write_data(&data)) {
         return 1;
     }
+    wbyte_data(777, 'L');
     return 0;
 }
