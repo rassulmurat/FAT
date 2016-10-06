@@ -4,17 +4,6 @@
 #include <string.h>
 #include <stdint.h>
 
-//File allocation table. int is next value
-typedef int FAT[1000];
-struct DIR_ENT {
-    int start;
-    int size;
-    int isdir;
-    char name[255];
-};
-typedef struct DIR_ENT DIR[1000];
-typedef char DATA[1000];
-
 /*
  * Read FAT
  * returns fater to FAT
@@ -100,6 +89,9 @@ int write_data(DATA *data)
     return 0;
 }
 
+/*
+*   Read full data file.
+*/
 int read_data(DATA *data)
 {
     FILE *file = fopen(PATH_DATA, "r");
@@ -123,7 +115,7 @@ int read_data(DATA *data)
 */
 int rbyte_data(int pos, char *dest)
 {
-    pos = pos - 1;
+    pos = pos + 1;
     FILE *file = fopen(PATH_DATA, "r+");
     if (!file) {
         perror("Could not open DATA");
@@ -145,7 +137,7 @@ int rbyte_data(int pos, char *dest)
 */
 int wbyte_data(int pos, char ch)
 {
-    pos = pos - 1;
+    pos = pos + 1;
     FILE *file = fopen(PATH_DATA, "r+");
     if (!file) {
         perror("Could not open DATA");
@@ -157,48 +149,5 @@ int wbyte_data(int pos, char ch)
         return 1;
     }
     fclose(file);
-    return 0;
-}
-
-int test_read()
-{
-    FAT fat;
-    if (read_fat(&fat)) {
-        return 1;
-    }
-    DIR dir;
-    if (read_dir(&dir)) {
-        return 1;
-    }
-    char ch;
-    if (rbyte_data(777, &ch)) {
-        return 1;
-    }
-    printf("FAT: %s ", dir[0].name);
-    printf("DIR: %d ", fat[0]);
-    printf("DATA: %c\n", ch);
-    return 0;
-}
-
-int init()
-{
-    FAT fat;
-    memset(&fat, 0, sizeof(FAT));
-    fat[0] = 1;
-    if (write_fat(&fat)) {
-        return 1;
-    }
-    DIR dir;
-    strcpy(dir[0].name, "unknown");
-    if (write_dir(&dir)) {
-        return 1;
-    }
-    DATA data;
-    // _ means empty slot
-    memset(data, '_', sizeof(DATA));
-    if (write_data(&data)) {
-        return 1;
-    }
-    wbyte_data(777, 'L');
     return 0;
 }
