@@ -1,6 +1,5 @@
 #include "io_basic.c"
 #include "fat_linker.h"
-// #include "fat_funcs.c"
 
 static FAT global_fat;
 static DIR global_dir;
@@ -74,11 +73,10 @@ int write_file(char path[500], char str[])
 
 int md_find(char *path)
 {
+	update();
 	for (int i = 0; i < sizeof(global_dir); ++i)
 	{
-		// printf("%s\n", global_dir[i].path);
 		if (strcmp(global_dir[i].path, path) == 0) {
-			// printf("%d\n", i);
 			return i;
 		}
 	}
@@ -86,11 +84,24 @@ int md_find(char *path)
 	return -1;
 }
 
+int md_get(int pos, struct DIR_ENT *md)
+{
+	if (pos < sizeof(global_dir)) {
+		md = &global_dir[pos];
+		return 0;
+	}
+	perror("MD out of range");
+	return 1;
+}
+
 int mdget_free()
 {
 	for (int i = 0; i < sizeof(global_dir); ++i)
 	{
-		if (global_dir[i].path != "") {
+		if (global_dir[i].path[0] == '\0') {
+			#ifdef debug
+			printf("Empty MD cell at %d\n", i);
+			#endif
 			return i;
 		}
 	}
@@ -102,6 +113,9 @@ int fget_free()
 	for (int i = 0; i < sizeof(FAT); ++i)
 	{
 		if (global_fat[i] == FREE_BLOCK) {
+			#ifdef debug
+			printf("Empty FAT cell at %d\n", i);
+			#endif
 			return i;
 		}
 	}
@@ -147,6 +161,83 @@ int rm_dir(char *path)
 	}
 	struct DIR_ENT dent;
 	global_dir[pos] = dent;
+}
+
+int find_children(char *path, struct DIR_ENT *children[])
+{
+	char *arrtmp[sizeof(path)];
+	int tmp = split_string(path, arrtmp);
+	char *arrm[tmp];
+	cpyarr(arrm, arrtmp, tmp);
+	int added = 0;
+	for (int i = 0; i < sizeof(global_dir); ++i)
+	{
+		if (global_dir[i].path[0] == '\0') {
+			break;
+		}
+		// #ifdef debug
+		printf("'%s id: %d'\n", global_dir[i].path, i);
+		// #endif
+        char *arrtmp2[sizeof(global_dir[i].path)];
+		tmp = split_string(global_dir[i].path, arrtmp2);
+		// printf("tmp %d\n", tmp);
+		char *arrglob[tmp];
+		cpyarr(arrglob, arrtmp, tmp);
+        int nelm = sizeof(arrm)/8;
+        int nelgl = sizeof(arrglob)/8;
+		if (nelm + 1 == nelgl) {
+			int state = 0;
+			for (int i1 = 0; i1 < sizeof(arrm)/8; ++i1)
+			{
+				if (strcmp(arrm[i1], arrglob[i1]) == 0) {
+					state = 1;
+				} else {
+					state = 0;
+					break;
+				}
+			}
+			if (state) {
+				#ifdef debug
+				printf("Child added, path: %s %d\n", global_dir[i].path, i);
+				#endif
+				children[added] = &global_dir[i];
+				++added;
+			}
+		}
+	}
+	return added;
+}
+
+int cpyarr(char *dst[], char *from[], int size)
+{
+	for (int i = 0; i < size; ++i)
+	{
+		dst[i] = from[i];
+	}
+}
+
+int split_string(char str[], char *arr[])
+{
+	const char *s = "/";
+    char *token;
+    char tmp[strlen(str)];
+    strcpy(tmp, str);
+	token = strtok(tmp, s);
+    arr[0] = token;
+    int count = 1;
+
+    while (token != NULL) {
+        token = strtok(NULL, s);
+        if (token != NULL) {
+        	// #ifdef debug
+	        printf("split_string: '%s'\n", token);
+	        // #endif
+        	arr[count] = token;
+        	++count;
+        }
+    }
+    // printf("%d\n", count);
+    return count;
 }
 
 int check()
