@@ -5,3 +5,5 @@ fat
 DATA
 DIR
 FAT
+io.o
+tree.o
