@@ -4,9 +4,12 @@
 int const SIZE_FAT = 8;
 int const PATH_SIZE = 500;
 
-char const PATH_FAT[] = "FAT";
-char const PATH_DIR[] = "DIR";
-char const PATH_DATA[] = "DATA";
+char *NAME_FAT = "/FAT";
+char *NAME_DIR = "/DIR";
+char *NAME_DATA = "/DATA";
+char *PATH_FAT;
+char *PATH_DIR;
+char *PATH_DATA;
 // int CELL_NUM = 1000;
 
 int const END_BLOCK = -1;
@@ -21,5 +24,5 @@ struct DIR_ENT {
     int isdir;
     char path[500];
 };
-typedef struct DIR_ENT DIR[1000];
+typedef struct DIR_ENT **DIR;
 typedef char DATA[1000];
