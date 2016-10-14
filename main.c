@@ -89,7 +89,7 @@ static int mkdir_callback (const char *path, mode_t mode)
 {
 	int err = mkDir(path);
 	if (err) {
-	return 1;
+		return 1;
 	}
 	return 0;
 }

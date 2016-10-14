@@ -35,8 +35,7 @@ int initpoptree()
 {
 	int fd = open(file_path, O_RDONLY);
 	struct dir_ent *md = malloc(sizeof(struct dir_ent));
-	for (int i = 0; i < dirnum; ++i)
-	{
+	for (int i = 0; i < dirnum; ++i) {
 		rddir(fd, md, i);
 		if (strcmp(md->path, "") != 0) {
 			insert(md->path);
@@ -95,7 +94,6 @@ int initvals()
  * */
 int rddir(int fd, struct dir_ent *DIR, int pos)
 {
-//    DIR = malloc(sizedir);
 	lseek(fd, pos*sizedir, SEEK_SET);
 	int ret = read(fd, DIR, sizedir);
 	if (ret != sizedir) {
@@ -234,7 +232,7 @@ int fRead(const char *path, char *str)
 int fWrite(const char *file, const char *path)
 {
 	int fd = open(file_path, O_RDWR);
-	if(fd < 0) {
+	if (fd < 0) {
 		perror("BAD FD");
 		return 1;
 	}
@@ -304,7 +302,7 @@ int fWrite(const char *file, const char *path)
 int exists(const char *path)
 {
 	int fd = open(file_path, O_RDONLY);
-	if(fd < 0) {
+	if (fd < 0) {
 		perror("Bad fd");
 		return 1;
 	}
@@ -341,7 +339,7 @@ int getFreeMD(int fd, struct dir_ent *md, int *pos)
 		if (err) {
 			return 1;
 		}
-		if(md->isdir == FREE_BLOCK) {
+		if (md->isdir == FREE_BLOCK) {
 			*pos = i;
 			return 0;
 		}
@@ -354,7 +352,7 @@ int findMD(int fd, const char *path, struct dir_ent *md, int *mdpos)
 {
 	for (int i = 0; i < dirnum; ++i) {
 		rddir(fd, md, i);
-		if(strcmp(md->path, path) == 0) {
+		if (strcmp(md->path, path) == 0) {
 			*mdpos = i;
 			printf("found md at pos %d, md->start %d\n", i, md->start);
 			
