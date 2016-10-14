@@ -1,7 +1,7 @@
 cc = gcc
 
 default: compile
-	$(cc) -o fat fuse-example.o -lfuse 
+	$(cc) -o fat main.o -lfuse 
 compile:
 	$(cc) -c *.c -D_FILE_OFFSET_BITS=64
 debug: compiled
