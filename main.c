@@ -56,7 +56,8 @@ static int readdir_callback(const char *path, void *buf, fuse_fill_dir_t filler,
 	return 0;
 }
 
-static int open_callback(const char *path, struct fuse_file_info *fi) {
+static int open_callback(const char *path, struct fuse_file_info *fi) 
+{
 	puts("Im here");
 	return 0;
 }
@@ -73,7 +74,8 @@ static int read_callback(const char *path, char *buf, size_t size, off_t offset,
 	return size;
 }
 
-static void *init_callback (struct fuse_conn_info *conn) {
+static void *init_callback (struct fuse_conn_info *conn) 
+{
 	init();
 }
 
