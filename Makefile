@@ -9,4 +9,4 @@ debug: compiled
 compiled:
 	$(cc) -c *.c -Ddebug
 clean:
-	rm -f *.o fat
+	rm -f *.o fat\n
